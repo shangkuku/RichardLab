@@ -1,0 +1,129 @@
+package chatroom;
+
+import chatroom.server.ChatServer;
+
+import javax.security.auth.login.LoginException;
+import java.io.*;
+import java.net.Socket;
+import java.util.stream.Collectors;
+
+import static java.lang.System.in;
+
+/**
+ * Created by RichardYuan on 2017/5/18 0018.
+ */
+public class ServerHandler {
+
+    private Socket socket;
+
+    private ChatServer server;
+
+
+    public ServerHandler(Socket socket, ChatServer server) {
+        this.socket = socket;
+        this.server = server;
+    }
+
+
+    public void handle() throws IOException {
+        this.handleRequest();
+    }
+
+    private void resolveCommand(InputMessage msg) throws IOException {
+        Command command = msg.getCommand();
+        String[] args = msg.getArgs();
+        switch (command) {
+            case LOGIN: toLogin(args); break;
+            case SEND_MESSAGE: toSendMsg(args); break;
+        }
+    }
+
+    private void toSendMsg(String[] args) throws IOException {
+        String content = args[0];
+
+        String receiver = args[1];
+
+        //存入服务器消息队列
+        if (!server.isOnline(receiver)) {
+
+        } else {
+            Socket receiverSocket = server.getSocketByUser(receiver);
+            receiverSocket.getOutputStream().write(this.encodeReponse(content));
+        }
+    }
+
+    private void toLogin(String ...args) {
+        try {
+            if (server.login(socket, args[0], args[1])) {
+                socket.getOutputStream().write(CommonUtils.encode("登录成功"));
+            }
+
+        } catch (LoginFailException e) {
+            String res = "登陆失败:" + e.getMessage();
+            try {
+                loginFail(res);
+            } catch (IOException ee) {
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loginFail(String res) throws IOException {
+        this.socket.getOutputStream().write(encodeReponse(res));
+    }
+
+    private byte[] encodeReponse(String res) {
+        return CommonUtils.encode(res);
+    }
+
+
+    private void handleResponse() {
+
+    }
+
+    private void handleRequest() throws IOException {
+        new RequestHandle(socket.getInputStream()).run();
+    }
+
+    private class RequestHandle extends InputHandler {
+
+
+        RequestHandle(InputStream in) {
+            super(in);
+        }
+
+        @Override
+        void parseInputInternal(String msg) throws IOException {
+            String[] split = msg.split("\\s");
+            String command = split[0];
+            String[] args = new String[split.length];
+            System.arraycopy(split, 1, args, 0, split.length - 1);
+            InputMessage im = new InputMessage(Command.valueOf(command.toUpperCase()), args);
+            ServerHandler.this.resolveCommand(im);
+        }
+    }
+
+//    private class ResponseHandle implements Runnable {
+//
+//        private OutputStream out;
+//
+//        public ResponseHandle(OutputStream out) {
+//            this.out = out;
+//        }
+//
+//
+//        @Override
+//        public void run() {
+//            parseResponse();
+//        }
+//
+//        private void parseResponse() {
+//
+//        }
+//    }
+
+
+}

@@ -1,10 +1,9 @@
 package chatroom.client;
 
-import chatroom.ChatProtocol;
 import chatroom.ClientHandler;
+import chatroom.User;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 
 /**
@@ -12,17 +11,22 @@ import java.net.Socket;
  */
 public class ChatClient implements Runnable {
 
+
+    public Socket socket;
+
+    public String user;
+
     @Override
     public void run() {
         try (Socket socket = new Socket("localhost", 4396)) {
-            new ClientHandler(socket, this).startHandle();
+            this.socket = socket;
+            new ClientHandler(this).startHandle();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
 
     }
-
 
 
     public static void main(String[] args) {

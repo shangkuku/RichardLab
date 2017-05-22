@@ -15,7 +15,7 @@ public class ServerHandler {
 
     private ChatServer server;
 
-    private OutputHandler outputHandler;
+    private String userName;
 
 
     public ServerHandler(Socket socket, ChatServer server) {
@@ -26,7 +26,6 @@ public class ServerHandler {
 
     public void handle() throws IOException {
         this.handleRequest();
-        this.handleResponse();
     }
 
     private void resolveCommand(InputMessage msg) throws IOException {
@@ -48,37 +47,30 @@ public class ServerHandler {
 
         } else {
             Socket receiverSocket = server.getSocketByUser(receiver);
-            ServerHandler.this.outputHandler.writeMessage(content);
+            CommonUtils.writeMessage(receiverSocket.getOutputStream(), "【"+this.userName +"】"+content);
         }
     }
 
-    private void toLogin(String ...args) {
+    private void toLogin(String ...args) throws IOException {
         try {
             if (server.login(socket, args[0], args[1])) {
-                socket.getOutputStream().write(CommonUtils.encode("登录成功"));
+                this.userName = args[0];
+                socket.getOutputStream().write(CommonUtils.encode(ChatProtocol.SUCCESS_FLAG));
             }
 
         } catch (LoginFailException e) {
             String res = "登陆失败:" + e.getMessage();
             loginFail(res);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
-    private void loginFail(String res) {
-
+    private void loginFail(String res) throws IOException {
+        CommonUtils.writeMessage(socket.getOutputStream(), res);
     }
 
 
 
-    private void handleResponse() {
-        try {
-            this.outputHandler = new OutputHandler(this.socket.getOutputStream());
-        } catch (IOException e) {
-            LogUtils.log("服务器内部错误", e);
-        }
-    }
+
 
     private void handleRequest() throws IOException {
         server.executor.execute(new RequestHandle(socket.getInputStream()));
@@ -102,7 +94,7 @@ public class ServerHandler {
                 InputMessage im = new InputMessage(c, args);
                 ServerHandler.this.resolveCommand(im);
             } catch (IllegalArgumentException e) {
-                ServerHandler.this.outputHandler.writeMessage("无效命令");
+                CommonUtils.writeMessage(socket.getOutputStream(), "无效命令");
             }
 
         }

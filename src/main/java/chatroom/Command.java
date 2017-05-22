@@ -8,7 +8,24 @@ public enum Command {
 
     LOGOUT,
 
-    SEND_MESSAGE,
+    SEND_MESSAGE;
 
+    public static boolean isInCommand(String command) {
+        try {
+            valueOf(command.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public static Command resolveCommand(String command) throws UnknownCommand{
+        try {
+            Command c = valueOf(command.toUpperCase());
+            return c;
+        } catch (IllegalArgumentException e) {
+            throw new UnknownCommand("未知命令");
+        }
+    }
 
 }

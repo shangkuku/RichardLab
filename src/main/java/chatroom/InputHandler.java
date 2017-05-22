@@ -28,18 +28,8 @@ public abstract class InputHandler implements Runnable {
     protected void parseInput() throws IOException {
 
         while (true) {
-
-            byte[] b = new byte[2048];
-            int length;
-            String msg = null;
-            while ((length = in.read(b)) != -1) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
-                baos.write(b, 0, length);
-                msg = baos.toString(ChatProtocol.DEFAULT_CHARSET.toString());
-                parseInputInternal(msg);
-            }
-//             msg = new BufferedReader(new InputStreamReader(in, ChatProtocol.DEFAULT_CHARSET))
-//                    .lines().collect(Collectors.joining("\n"));
+            String msg = CommonUtils.readStream(in);
+            parseInputInternal(msg);
         }
     }
 

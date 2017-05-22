@@ -4,8 +4,6 @@ import chatroom.client.ChatClient;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.util.Scanner;
 
 /**
@@ -13,17 +11,13 @@ import java.util.Scanner;
  */
 public class ClientHandler {
 
-    private Socket socket;
+    private ChatClient client;
 
-    private ChatClient Client;
-
-    public ClientHandler(Socket socket, ChatClient client) {
-        this.socket = socket;
-        Client = client;
+    public ClientHandler(ChatClient client) {
+        this.client = client;
     }
 
     public void startHandle() throws IOException {
-        new Thread(new responseHandler(this.socket.getInputStream())).start();
         new Thread(new requestHandler()).run();
     }
 
@@ -47,7 +41,16 @@ public class ClientHandler {
             while (true) {
                 String inputMsg = scanner.nextLine();
                 try {
-                    ClientHandler.this.socket.getOutputStream().write(CommonUtils.encode(inputMsg));
+                    String[] m = inputMsg.split("\\s");
+
+                    ClientHandler.this.client.socket.getOutputStream().write(CommonUtils.encode(inputMsg));
+                    if (Command.LOGIN.equals(Command.resolveCommand(m[0]))) {
+                        String res = CommonUtils.readStream(client.socket.getInputStream());
+                        if (ChatProtocol.SUCCESS_FLAG.equals(res)) {
+                            ClientHandler.this.client.user = m[1];
+                            new Thread(new responseHandler(client.socket.getInputStream())).start();
+                        }
+                    }
                 } catch (IOException e) {
 
                 }

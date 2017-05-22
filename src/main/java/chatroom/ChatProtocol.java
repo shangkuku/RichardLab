@@ -3,8 +3,6 @@ package chatroom;
 import chatroom.server.ChatServer;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -17,9 +15,14 @@ public class ChatProtocol {
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 
+    public static final String SUCCESS_FLAG = "success";
+
+
     private ChatServer server;
 
     private int maxClient = 2;
+
+
 
     public ChatProtocol(ChatServer server) {
         this.server = server;

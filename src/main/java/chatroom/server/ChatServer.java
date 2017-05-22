@@ -26,6 +26,7 @@ public class ChatServer implements Runnable {
 
     public final ConcurrentHashMap<String, User> credentials = new ConcurrentHashMap<String, User>();
 
+    public final Executor executor = Executors.newCachedThreadPool();
 
     private final int DEFAULT_PORT = 4396;
 
@@ -111,7 +112,7 @@ public class ChatServer implements Runnable {
 
     private void checkUserBlock(String userName) throws LoginFailException {
         User u = this.credentials.get(userName);
-        if (u.getLastActiveTime() > 3) {
+        if (u.getLoginCounts() > 3) {
             throw new LoginFailException("连续登录超过3次，请在" + (BLOCK_DURATION / 1000 / 1000) + "秒后重试");
         }
     }
@@ -130,6 +131,7 @@ public class ChatServer implements Runnable {
     }
 
     public void online(String userName, Socket socket) {
+        LogUtils.log("用户【"+userName+"】已登录");
         this.onlineMap.put(userName, socket);
     }
 
@@ -145,7 +147,7 @@ public class ChatServer implements Runnable {
         return onlineMap.containsKey(userName);
     }
 
-    public Socket getSocketByUser(String userName) {
+    public Socket  getSocketByUser(String userName) {
         Socket socket;
         if (( socket = onlineMap.get(userName)) == null )
             LogUtils.log("用户【"+userName+"】未连接");
@@ -156,7 +158,8 @@ public class ChatServer implements Runnable {
         try (ServerSocket ss = new ServerSocket(this.port)) {
             LogUtils.log("服务器已启动");
             while (running) {
-                try (Socket socket = ss.accept()) {
+                try {
+                    Socket socket = ss.accept();
                     ChatProtocol protocol = new ChatProtocol(this);
                     protocol.startHandle(socket);
                 } catch (IOException e) {

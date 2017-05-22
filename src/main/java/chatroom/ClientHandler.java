@@ -24,7 +24,7 @@ public class ClientHandler {
 
     public void startHandle() throws IOException {
         new Thread(new responseHandler(this.socket.getInputStream())).start();
-        new Thread(new requestHandler()).start();
+        new Thread(new requestHandler()).run();
     }
 
     private class responseHandler extends InputHandler {

@@ -2,12 +2,9 @@ package chatroom;
 
 import chatroom.server.ChatServer;
 
-import javax.security.auth.login.LoginException;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
-import java.util.stream.Collectors;
-
-import static java.lang.System.in;
 
 /**
  * Created by RichardYuan on 2017/5/18 0018.
@@ -18,6 +15,8 @@ public class ServerHandler {
 
     private ChatServer server;
 
+    private OutputHandler outputHandler;
+
 
     public ServerHandler(Socket socket, ChatServer server) {
         this.socket = socket;
@@ -27,6 +26,7 @@ public class ServerHandler {
 
     public void handle() throws IOException {
         this.handleRequest();
+        this.handleResponse();
     }
 
     private void resolveCommand(InputMessage msg) throws IOException {
@@ -48,7 +48,7 @@ public class ServerHandler {
 
         } else {
             Socket receiverSocket = server.getSocketByUser(receiver);
-            receiverSocket.getOutputStream().write(this.encodeReponse(content));
+            ServerHandler.this.outputHandler.writeMessage(content);
         }
     }
 
@@ -60,32 +60,28 @@ public class ServerHandler {
 
         } catch (LoginFailException e) {
             String res = "登陆失败:" + e.getMessage();
-            try {
-                loginFail(res);
-            } catch (IOException ee) {
-
-            }
-
+            loginFail(res);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void loginFail(String res) throws IOException {
-        this.socket.getOutputStream().write(encodeReponse(res));
+    private void loginFail(String res) {
+
     }
 
-    private byte[] encodeReponse(String res) {
-        return CommonUtils.encode(res);
-    }
 
 
     private void handleResponse() {
-
+        try {
+            this.outputHandler = new OutputHandler(this.socket.getOutputStream());
+        } catch (IOException e) {
+            LogUtils.log("服务器内部错误", e);
+        }
     }
 
     private void handleRequest() throws IOException {
-        new RequestHandle(socket.getInputStream()).run();
+        server.executor.execute(new RequestHandle(socket.getInputStream()));
     }
 
     private class RequestHandle extends InputHandler {
@@ -101,8 +97,14 @@ public class ServerHandler {
             String command = split[0];
             String[] args = new String[split.length];
             System.arraycopy(split, 1, args, 0, split.length - 1);
-            InputMessage im = new InputMessage(Command.valueOf(command.toUpperCase()), args);
-            ServerHandler.this.resolveCommand(im);
+            try {
+                Command c = Command.valueOf(command.toUpperCase());
+                InputMessage im = new InputMessage(c, args);
+                ServerHandler.this.resolveCommand(im);
+            } catch (IllegalArgumentException e) {
+                ServerHandler.this.outputHandler.writeMessage("无效命令");
+            }
+
         }
     }
 

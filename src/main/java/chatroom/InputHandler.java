@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 /**
  * Created by RichardYuan on 2017/5/21 0021.
  */
-public abstract class InputHandler implements Runnable{
+public abstract class InputHandler implements Runnable {
 
     private InputStream in;
 
@@ -28,11 +28,12 @@ public abstract class InputHandler implements Runnable{
     protected void parseInput() throws IOException {
 
         while (true) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
+
             byte[] b = new byte[2048];
             int length;
             String msg = null;
             while ((length = in.read(b)) != -1) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
                 baos.write(b, 0, length);
                 msg = baos.toString(ChatProtocol.DEFAULT_CHARSET.toString());
                 parseInputInternal(msg);

@@ -34,7 +34,12 @@ public class ServerHandler {
         switch (command) {
             case LOGIN: toLogin(args); break;
             case SEND_MESSAGE: toSendMsg(args); break;
+            case LIST: toList(args); break;
         }
+    }
+
+    private void toList(String ... args) {
+
     }
 
     private void toSendMsg(String[] args) throws IOException {

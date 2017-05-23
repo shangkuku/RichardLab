@@ -8,7 +8,9 @@ public enum Command {
 
     LOGOUT,
 
-    SEND_MESSAGE;
+    SEND_MESSAGE,
+
+    LIST;
 
     public static boolean isInCommand(String command) {
         try {

@@ -27,7 +27,6 @@ public class ChatServer implements Runnable {
     public final ConcurrentHashMap<String, User> credentials = new ConcurrentHashMap<String, User>();
 
     public final Executor executor = Executors.newCachedThreadPool();
-
     private final int DEFAULT_PORT = 4396;
 
     private final int port;
@@ -52,7 +51,6 @@ public class ChatServer implements Runnable {
 
     private void init() {
         initCredentials();
-        startTimeoutServer();
 
     }
 
@@ -137,7 +135,7 @@ public class ChatServer implements Runnable {
     }
 
     private void onLineBroadcast(String userName) throws IOException {
-        broadcast(userName, String.format("用户 %s 已上线", userName));
+        broadcast(userName, String.format("用户 【%s】 已上线", userName));
     }
 
     private void broadcast(String currentUser, String msg) throws IOException {
@@ -149,7 +147,7 @@ public class ChatServer implements Runnable {
 
     private void offline(String userName) throws IOException {
         this.onlineMap.remove(userName);
-        broadcast(userName, String.format("用户 %s 已下线", userName));
+        broadcast(userName, String.format("用户 【%s】 已下线", userName));
     }
 
     public boolean logout(String userName) throws IOException {
@@ -173,26 +171,12 @@ public class ChatServer implements Runnable {
     public void run() {
         try (ServerSocket ss = new ServerSocket(this.port)) {
             LogUtils.log("服务器已启动");
+            startTimeoutServer();
             while (running) {
                 try {
                     Socket socket = ss.accept();
-
-                    new Thread(() -> {
-                        while (true) {
-                            try {
-                                CommonUtils.writeMessage(socket.getOutputStream(), "b");
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-
-                    while (true) {
-                        CommonUtils.writeMessage(socket.getOutputStream(), "a");
-                    }
-
-//                    ChatProtocol protocol = new ChatProtocol(this);
-//                    protocol.startHandle(socket);
+                    ChatProtocol protocol = new ChatProtocol(this);
+                    protocol.startHandle(socket);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -220,6 +204,7 @@ public class ChatServer implements Runnable {
                         User u = credentials.get(k);
                         if (isTimeOut(u.getLastActiveTime())) {
                             onlineMap.remove(k);
+                            System.out.println(String.format("用户【%s】超时未响应，已离线", u.getUserName()));
                         }
                     }
             );

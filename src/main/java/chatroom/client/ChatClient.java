@@ -21,10 +21,7 @@ public class ChatClient implements Runnable {
     public void run() {
         try (Socket socket = new Socket("localhost", 4396)) {
             this.socket = socket;
-            while (true) {
-                System.out.print(CommonUtils.readStream(this.socket.getInputStream()));
-            }
-//            new ClientHandler(this).startHandle();
+            new ClientHandler(this).startHandle();
         } catch (IOException e) {
             e.printStackTrace();
         }

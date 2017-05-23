@@ -94,7 +94,7 @@ public class ChatServer implements Runnable {
         return true;
     }
 
-    public boolean login(Socket socket, String userName, String password) throws LoginFailException {
+    public boolean login(Socket socket, String userName, String password) throws LoginFailException, IOException {
 
 
         if (!verifyLogin(userName, password)) {
@@ -123,36 +123,52 @@ public class ChatServer implements Runnable {
         u.incLoginCount();
     }
 
-    private User handleLoginSuccess(String userName, Socket socket) {
+    private User handleLoginSuccess(String userName, Socket socket) throws IOException {
         User u = this.credentials.get(userName);
         this.credentials.put(userName, u);
         this.online(userName, socket);
         return u;
     }
 
-    public void online(String userName, Socket socket) {
-        LogUtils.log("用户【"+userName+"】已登录");
+    public void online(String userName, Socket socket) throws IOException {
+        LogUtils.log("用户【" + userName + "】已登录");
         this.onlineMap.put(userName, socket);
+        onLineBroadcast(userName);
     }
 
-    public void offline(String userName) {
+    private void onLineBroadcast(String userName) throws IOException {
+        broadcast(userName, String.format("用户 %s 已上线", userName));
+    }
+
+    private void broadcast(String currentUser, String msg) throws IOException {
+        for (String userName : this.onlineMap.keySet()) {
+            if (userName.equals(currentUser)) continue;
+            CommonUtils.writeMessage(this.onlineMap.get(userName).getOutputStream(), msg);
+        }
+    }
+
+    private void offline(String userName) throws IOException {
         this.onlineMap.remove(userName);
+        broadcast(userName, String.format("用户 %s 已下线", userName));
     }
 
-    public boolean logout(String userName) {
+    public boolean logout(String userName) throws IOException {
+        this.offline(userName);
         return true;
     }
+
 
     public boolean isOnline(String userName) {
         return onlineMap.containsKey(userName);
     }
 
-    public Socket  getSocketByUser(String userName) {
+    public Socket getSocketByUser(String userName) {
         Socket socket;
-        if (( socket = onlineMap.get(userName)) == null )
-            LogUtils.log("用户【"+userName+"】未连接");
+        if ((socket = onlineMap.get(userName)) == null)
+            LogUtils.log("用户【" + userName + "】未连接");
         return socket;
     }
+
     @Override
     public void run() {
         try (ServerSocket ss = new ServerSocket(this.port)) {
@@ -160,8 +176,23 @@ public class ChatServer implements Runnable {
             while (running) {
                 try {
                     Socket socket = ss.accept();
-                    ChatProtocol protocol = new ChatProtocol(this);
-                    protocol.startHandle(socket);
+
+                    new Thread(() -> {
+                        while (true) {
+                            try {
+                                CommonUtils.writeMessage(socket.getOutputStream(), "b");
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+
+                    while (true) {
+                        CommonUtils.writeMessage(socket.getOutputStream(), "a");
+                    }
+
+//                    ChatProtocol protocol = new ChatProtocol(this);
+//                    protocol.startHandle(socket);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

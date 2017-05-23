@@ -1,6 +1,7 @@
 package chatroom.client;
 
 import chatroom.ClientHandler;
+import chatroom.CommonUtils;
 import chatroom.User;
 
 import java.io.IOException;
@@ -20,7 +21,10 @@ public class ChatClient implements Runnable {
     public void run() {
         try (Socket socket = new Socket("localhost", 4396)) {
             this.socket = socket;
-            new ClientHandler(this).startHandle();
+            while (true) {
+                System.out.print(CommonUtils.readStream(this.socket.getInputStream()));
+            }
+//            new ClientHandler(this).startHandle();
         } catch (IOException e) {
             e.printStackTrace();
         }

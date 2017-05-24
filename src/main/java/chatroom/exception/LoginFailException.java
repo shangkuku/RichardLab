@@ -1,4 +1,4 @@
-package chatroom;
+package chatroom.exception;
 
 import javax.security.auth.login.LoginException;
 

@@ -1,4 +1,6 @@
-package chatroom;
+package chatroom.model;
+
+import chatroom.exception.UnknownCommandException;
 
 /**
  * Created by RichardYuan on 2017/5/19 0019.
@@ -21,12 +23,12 @@ public enum Command {
         }
     }
 
-    public static Command resolveCommand(String command) throws UnknownCommand{
+    public static Command resolveCommand(String command) throws UnknownCommandException {
         try {
             Command c = valueOf(command.toUpperCase());
             return c;
         } catch (IllegalArgumentException e) {
-            throw new UnknownCommand("未知命令");
+            throw new UnknownCommandException("未知命令");
         }
     }
 

@@ -1,7 +1,9 @@
-package chatroom;
+package chatroom.handler;
 
-import java.io.*;
-import java.util.stream.Collectors;
+import chatroom.util.CommonUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by RichardYuan on 2017/5/21 0021.
@@ -10,7 +12,7 @@ public abstract class InputHandler implements Runnable {
 
     private InputStream in;
 
-    InputHandler(InputStream in) {
+    public InputHandler(InputStream in) {
         this.in = in;
     }
 
@@ -34,6 +36,6 @@ public abstract class InputHandler implements Runnable {
     }
 
 
-    abstract void parseInputInternal(String msg) throws IOException;
+    public abstract void parseInputInternal(String msg) throws IOException;
 
 }

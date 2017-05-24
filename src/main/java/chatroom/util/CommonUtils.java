@@ -1,7 +1,11 @@
-package chatroom;
+package chatroom.util;
 
-import java.io.*;
-import java.util.stream.Collectors;
+import chatroom.server.ChatProtocol;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by RichardYuan on 2017/5/17 0017.

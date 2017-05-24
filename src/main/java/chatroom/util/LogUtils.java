@@ -1,4 +1,4 @@
-package chatroom;
+package chatroom.util;
 
 /**
  * Created by RichardYuan on 2017/5/16 0016.

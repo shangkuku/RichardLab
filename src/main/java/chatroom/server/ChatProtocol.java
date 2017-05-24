@@ -1,6 +1,4 @@
-package chatroom;
-
-import chatroom.server.ChatServer;
+package chatroom.server;
 
 import java.io.IOException;
 import java.net.Socket;

@@ -1,4 +1,6 @@
-package chatroom;
+package chatroom.model;
+
+import chatroom.util.CommonUtils;
 
 /**
  * Created by RichardYuan on 2017/5/17 0017.

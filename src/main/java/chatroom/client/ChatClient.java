@@ -1,9 +1,5 @@
 package chatroom.client;
 
-import chatroom.ClientHandler;
-import chatroom.CommonUtils;
-import chatroom.User;
-
 import java.io.IOException;
 import java.net.Socket;
 

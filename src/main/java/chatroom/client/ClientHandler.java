@@ -1,6 +1,10 @@
-package chatroom;
+package chatroom.client;
 
-import chatroom.client.ChatClient;
+import chatroom.handler.InputHandler;
+import chatroom.model.Command;
+import chatroom.server.ChatProtocol;
+import chatroom.util.CommonUtils;
+import chatroom.util.LogUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +32,7 @@ public class ClientHandler {
         }
 
         @Override
-        void parseInputInternal(String msg) throws IOException {
+        public void parseInputInternal(String msg) throws IOException {
             LogUtils.log(msg);
         }
     }

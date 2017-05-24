@@ -1,4 +1,4 @@
-package chatroom;
+package chatroom.model;
 
 /**
  * Created by RichardYuan on 2017/5/18 0018.

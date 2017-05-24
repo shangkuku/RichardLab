@@ -55,18 +55,18 @@ public class ServerHandler {
         if ((u = server.credentials.get(userName)) == null) {
             throw new LoginFailException("该用户不存在");
         }
-        if (!password.equals(u.getPassword())) {
+        if (!u.getPassword().equals(password)) {
             throw new LoginFailException("密码错误");
         }
-        checkUserBlock(userName);
+        checkUserBlock();
         return true;
     }
 
-    public boolean login(Socket socket, String userName, String password) throws LoginFailException, IOException {
+    public boolean login(String userName, String password) throws LoginFailException, IOException {
 
 
         if (!verifyLogin(userName, password)) {
-            handleLoginFail(userName);
+            handleLoginFail();
             return false;
         }
 
@@ -74,28 +74,37 @@ public class ServerHandler {
             throw new LoginFailException("当前用户已在线");
         }
 
-        handleLoginSuccess(userName, socket);
+        handleLoginSuccess();
         return true;
     }
 
-    private void checkUserBlock(String userName) throws LoginFailException {
+    private void checkUserBlock() throws LoginFailException {
         User u = server.credentials.get(userName);
         if (u.getLoginCounts() > 3) {
             throw new LoginFailException("连续登录超过3次，请在" + (ChatServer.BLOCK_DURATION / 1000 / 1000) + "秒后重试");
         }
     }
 
-    private void handleLoginFail(String userName) {
+    private void handleLoginFail() {
         User u = server.credentials.get(userName);
         u.setLastActiveTime(CommonUtils.now());
         u.incLoginCount();
     }
 
-    private User handleLoginSuccess(String userName, Socket socket) throws IOException {
+    private User handleLoginSuccess() throws IOException {
         User u = server.credentials.get(userName);
         server.credentials.put(userName, u);
         this.online(userName, socket);
+        CommonUtils.writeMessage(socket.getOutputStream(), ChatProtocol.SUCCESS_FLAG);
+        this.sendOfflineMsg();
         return u;
+    }
+
+    private void sendOfflineMsg() throws IOException {
+        Queue<ChatMessage> msgQ = server.offlineMsg.get(this.userName);
+        if (msgQ != null && !msgQ.isEmpty()) {
+            CommonUtils.writeMessage(socket.getOutputStream(), msgQ.poll().toString());
+        }
     }
 
     public void online(String userName, Socket socket) throws IOException {
@@ -116,7 +125,10 @@ public class ServerHandler {
     }
 
     private void offline(String userName) throws IOException {
-        server.onlineMap.remove(userName);
+        if (userName != null) {
+            server.onlineMap.remove(userName);
+        }
+
         broadcast(userName, String.format("用户 【%s】 已下线", userName));
     }
 
@@ -192,7 +204,7 @@ public class ServerHandler {
                 .stream()
                 .filter(stringUserEntry -> {
                     String u = stringUserEntry.getKey();
-                    return u.equals(userName) || server.onlineMap.containsKey(u);
+                    return !u.equals(userName) && !server.onlineMap.containsKey(u);
                 })
                 .forEach(stringUserEntry -> {
                     list.add(stringUserEntry.getKey());
@@ -214,10 +226,10 @@ public class ServerHandler {
 
         //存入服务器消息队列
         if (!this.isOnline(receiver)) {
-//            Deque q = server.offlineMsg.get(receiver);
-//            q = q == null ? new ArrayDeque() : q;
-//            q.
-//            server.offlineMsg.put(receiver, cm);
+            Queue q = server.offlineMsg.get(receiver);
+            q = q == null ? new LinkedList() : q;
+            q.add(cm);
+            server.offlineMsg.put(receiver, q);
         } else {
             Socket receiverSocket = this.getSocketByUser(receiver);
             CommonUtils.writeMessage(receiverSocket.getOutputStream(),
@@ -227,10 +239,8 @@ public class ServerHandler {
 
     private void toLogin(String ...args) throws IOException {
         try {
-            if (this.login(socket, args[0], args[1])) {
-                this.userName = args[0];
-                socket.getOutputStream().write(CommonUtils.encode(ChatProtocol.SUCCESS_FLAG));
-            }
+            this.userName = args[0];
+            this.login(args[0], args[1]);
 
         } catch (LoginFailException e) {
             String res = "登陆失败:" + e.getMessage();
@@ -242,6 +252,14 @@ public class ServerHandler {
         CommonUtils.writeMessage(socket.getOutputStream(), res);
     }
 
+    private void shutdown() {
+        try {
+            this.offline(ServerHandler.this.userName);
+            this.socket.close();
+        } catch (IOException e) {
+            CommonUtils.unknownException(e);
+        }
+    }
 
 
 
@@ -255,6 +273,11 @@ public class ServerHandler {
 
         RequestHandle(InputStream in) {
             super(in);
+        }
+
+        @Override
+        protected void shutdown() {
+            ServerHandler.this.shutdown();
         }
 
         @Override

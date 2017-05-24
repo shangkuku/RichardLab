@@ -1,25 +1,26 @@
 package chatroom.client;
 
+import chatroom.util.CommonUtils;
+
 import java.io.IOException;
 import java.net.Socket;
 
 /**
  * Created by RichardYuan on 2017/5/17 0017.
  */
-public class ChatClient implements Runnable {
+public class ChatClient {
 
 
     public Socket socket;
 
     public String user;
 
-    @Override
-    public void run() {
+    public void startup() {
         try (Socket socket = new Socket("localhost", 4396)) {
             this.socket = socket;
             new ClientHandler(this).startHandle();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("连接超时");
         }
 
 
@@ -27,6 +28,14 @@ public class ChatClient implements Runnable {
 
 
     public static void main(String[] args) {
-        new ChatClient().run();
+        new ChatClient().startup();
+    }
+
+    public void shutdown() {
+        try {
+            this.socket.close();
+        } catch (IOException e) {
+            CommonUtils.unknownException(e);
+        }
     }
 }

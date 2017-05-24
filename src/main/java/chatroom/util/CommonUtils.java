@@ -1,5 +1,6 @@
 package chatroom.util;
 
+import chatroom.exception.UnknownException;
 import chatroom.model.Constants;
 import chatroom.server.ChatProtocol;
 
@@ -22,21 +23,17 @@ public class CommonUtils {
         return str.getBytes(ChatProtocol.DEFAULT_CHARSET);
     }
 
-    public static String readStream(InputStream in) {
+    public static String readStream(InputStream in) throws IOException {
 
         byte[] b = new byte[2048];
         int length;
         String msg = null;
         synchronized (in) {
-            try {
-                while ((length = in.read(b)) != -1) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
-                    baos.write(b, 0, length);
-                    msg = baos.toString(ChatProtocol.DEFAULT_CHARSET.toString());
-                    return msg;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            while ((length = in.read(b)) != -1) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
+                baos.write(b, 0, length);
+                msg = baos.toString(ChatProtocol.DEFAULT_CHARSET.toString());
+                return msg;
             }
         }
         return msg;
@@ -64,6 +61,10 @@ public class CommonUtils {
 
     public static String Col2String(Collection col) {
         return Col2String(col, Constants.COMMA);
+    }
+
+    public static void unknownException(Throwable e) {
+        throw new UnknownException("未知错误", e);
     }
 
 }

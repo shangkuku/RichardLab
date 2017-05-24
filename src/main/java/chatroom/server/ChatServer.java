@@ -1,6 +1,7 @@
 package chatroom.server;
 
 import chatroom.exception.LoginFailException;
+import chatroom.model.ChatMessage;
 import chatroom.model.User;
 import chatroom.util.CommonUtils;
 import chatroom.util.LogUtils;
@@ -31,7 +32,7 @@ public class ChatServer implements Runnable {
 
     public final ConcurrentHashMap<String, List<String>> blackList = new ConcurrentHashMap<>();
 
-    public final ConcurrentHashMap<String, Queue<String>> offlineMsg = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, Queue<ChatMessage>> offlineMsg = new ConcurrentHashMap<>();
 
     public final Executor executor = Executors.newCachedThreadPool();
     private final int DEFAULT_PORT = 4396;
@@ -99,7 +100,7 @@ public class ChatServer implements Runnable {
                     ChatProtocol protocol = new ChatProtocol(this);
                     protocol.startHandle(socket);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    CommonUtils.unknownException(e);
                 }
             }
         } catch (IOException e) {
@@ -107,7 +108,6 @@ public class ChatServer implements Runnable {
             System.exit(0);
         }
     }
-
 
 
 

@@ -12,7 +12,29 @@ public enum Command {
 
     SEND_MESSAGE,
 
-    LIST;
+    LIST,
+
+    BLACKLIST;
+
+
+
+    public static enum ListCommand {
+
+        ALL("所有人"),
+        BLACKLIST("黑名单"),
+        ONLINE("在线"),
+        OFFLINE("离线");
+
+        ListCommand(String value) {
+            this.value = value;
+        }
+
+        private final String value;
+
+        public String getValue() {
+            return value;
+        }
+    }
 
     public static boolean isInCommand(String command) {
         try {
@@ -31,5 +53,6 @@ public enum Command {
             throw new UnknownCommandException("未知命令");
         }
     }
+
 
 }

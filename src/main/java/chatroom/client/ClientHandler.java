@@ -1,6 +1,6 @@
 package chatroom.client;
 
-import chatroom.handler.InputHandler;
+import chatroom.parser.InputParser;
 import chatroom.model.Command;
 import chatroom.server.ChatProtocol;
 import chatroom.util.CommonUtils;
@@ -25,7 +25,7 @@ public class ClientHandler {
         new Thread(new requestHandler()).run();
     }
 
-    private class responseHandler extends InputHandler {
+    private class responseHandler extends InputParser {
 
         private responseHandler(InputStream in) {
             super(in);

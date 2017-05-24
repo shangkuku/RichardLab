@@ -1,4 +1,4 @@
-package chatroom.handler;
+package chatroom.parser;
 
 import chatroom.util.CommonUtils;
 
@@ -8,11 +8,11 @@ import java.io.InputStream;
 /**
  * Created by RichardYuan on 2017/5/21 0021.
  */
-public abstract class InputHandler implements Runnable {
+public abstract class InputParser implements Runnable {
 
     private InputStream in;
 
-    public InputHandler(InputStream in) {
+    public InputParser(InputStream in) {
         this.in = in;
     }
 

@@ -7,4 +7,8 @@ public class UnknownCommandException extends UnsupportedOperationException{
     public UnknownCommandException(String message) {
         super(message);
     }
+
+    public UnknownCommandException(String message, Throwable e) {
+        super(message, e);
+    }
 }

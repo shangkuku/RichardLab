@@ -1,11 +1,13 @@
 package chatroom.util;
 
+import chatroom.model.Constants;
 import chatroom.server.ChatProtocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 
 /**
  * Created by RichardYuan on 2017/5/17 0017.
@@ -48,6 +50,20 @@ public class CommonUtils {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static String Col2String(Collection col, String delimiter) {
+        if (col ==null || col.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        col.forEach(o -> {
+            if (sb.length() > 0) sb.append(delimiter);
+            sb.append(o);
+        });
+        return sb.toString();
+    }
+
+    public static String Col2String(Collection col) {
+        return Col2String(col, Constants.COMMA);
     }
 
 }

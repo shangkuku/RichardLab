@@ -30,10 +30,12 @@ public abstract class InputParser implements Runnable {
         try {
             parseInput();
         } catch (IOException e) {
-            e.printStackTrace();
+            shutdown();
         }
 
     }
+
+    abstract protected void shutdown();
 
     protected void parseInput() throws IOException {
 

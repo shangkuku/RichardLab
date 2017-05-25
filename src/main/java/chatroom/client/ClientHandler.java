@@ -9,6 +9,7 @@ import chatroom.util.LogUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Scanner;
 
 /**
@@ -30,17 +31,21 @@ public class ClientHandler {
         new Thread(new RequestHandler()).run();
     }
 
-    private class responseHandler extends InputParser {
+    private void shutdown () {
+        this.running = false;
+        this.scanner.close();
+        this.client.shutdown();
+    }
 
-        private responseHandler(InputStream in) {
+    private class ResponseHandler extends InputParser {
+
+        private ResponseHandler(InputStream in) {
             super(in);
         }
 
         @Override
         protected void shutdown() {
-            ClientHandler.this.running = false;
-            ClientHandler.this.scanner.close();
-            ClientHandler.this.client.shutdown();
+           ClientHandler.this.shutdown();
         }
 
         @Override
@@ -53,6 +58,10 @@ public class ClientHandler {
 
         private ClientHandler clientHandler = ClientHandler.this;
 
+        private boolean isLoginSuccess (String res) {
+            return (ChatProtocol.SUCCESS_FLAG + ChatProtocol.END_FLAG).equals(res);
+        }
+
         @Override
         public void run() {
             System.out.println("请先登陆啦");
@@ -60,20 +69,20 @@ public class ClientHandler {
                 String inputMsg = scanner.nextLine();
                 if (!running) break;
                 try {
-                    String[] m = inputMsg.split("\\s");
                     CommonUtils.writeMessage(clientHandler.client.socket.getOutputStream(), inputMsg);
+                    String[] m = inputMsg.split("\\s");
                     if (Command.LOGIN.equals(Command.resolveCommand(m[0]))) {
                         String res = CommonUtils.readStream(client.socket.getInputStream());
-                        if (ChatProtocol.SUCCESS_FLAG.equals(res)) {
+                        if (isLoginSuccess(res)) {
                             clientHandler.client.user = m[1];
-                            Thread t = new Thread(new responseHandler(client.socket.getInputStream()));
+                            Thread t = new Thread(new ResponseHandler(client.socket.getInputStream()));
                             t.setDaemon(true);
                             t.setName("Client Reader");
                             t.start();
                         }
                     }
                 } catch (IOException e) {
-                    clientHandler.client.shutdown();
+                    clientHandler.shutdown();
                 } catch (UnknownCommandException ee) {
                     System.out.println("未知命令");
                 }

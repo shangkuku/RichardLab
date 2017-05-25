@@ -22,34 +22,25 @@ public class CommonUtils {
         return str.getBytes(ChatProtocol.DEFAULT_CHARSET);
     }
 
-    public static String readStream(InputStream in) {
+    public static String readStream(InputStream in) throws IOException {
 
         byte[] b = new byte[2048];
         int length;
         String msg = null;
         synchronized (in) {
-            try {
-
                 while ((length = in.read(b)) != -1) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
                     baos.write(b, 0, length);
                     msg = baos.toString(ChatProtocol.DEFAULT_CHARSET.toString());
                     return msg;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         return msg;
     }
 
-    public static void writeMessage(OutputStream out, String msg) {
+    public static void writeMessage(OutputStream out, String msg) throws IOException {
         synchronized (out) {
-            try {
-                out.write(encode(msg));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                out.write(encode(msg + ChatProtocol.END_FLAG));
         }
     }
 
@@ -67,4 +58,7 @@ public class CommonUtils {
         return Col2String(col, Constants.COMMA);
     }
 
+    public static void unknownException(IOException e) {
+        throw new RuntimeException("unknown exception", e);
+    }
 }

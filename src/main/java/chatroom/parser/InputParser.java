@@ -23,7 +23,7 @@ public abstract class InputParser implements Runnable {
         this.in = in;
     }
 
-    protected Queue<InputMessage> mq = new LinkedList();
+    private StringBuilder notFinshed = new StringBuilder();
 
     @Override
     public void run() {
@@ -41,42 +41,23 @@ public abstract class InputParser implements Runnable {
 
         while (true) {
             String msg = CommonUtils.readStream(in);
-            parseInputInternal(msg);
+            parseMsg(msg);
         }
     }
 
-    private final void parseMsg () {
-        byte[] b = new byte[2048];
-        int length;
-        String msg = null;
-        synchronized (in) {
-            try {
-
-                while ((length = in.read(b)) != -1) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
-                    baos.write(b, 0, length);
-                    msg = baos.toString(ChatProtocol.DEFAULT_CHARSET.toString());
-//                    msg.split(ChatProtocol.END_FLAG)
-                    String[] split = msg.split("\\s");
-                    String command = split[0];
-                    String[] args = new String[split.length];
-                    System.arraycopy(split, 1, args, 0, split.length - 1);
-                    try {
-                        Command c = Command.valueOf(command.toUpperCase());
-                        InputMessage im = new InputMessage(c, args);
-//                        ServerHandler.this.resolveCommand(im);
-                    } catch (IllegalArgumentException e) {
-//                        CommonUtils.writeMessage(socket.getOutputStream(), String.format("无效命令<%s>", msg));
-                    }
-
-//                    mq.add()
-//                    return msg;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    protected void parseMsg(String msg) throws IOException {
+        String inputMsg;
+        int pos;
+        if (notFinshed.length() > 0) {
+            msg = notFinshed.append(msg).toString();
+            notFinshed.setLength(0);
         }
-//        return msg;
+        while ((pos = msg.indexOf(ChatProtocol.END_FLAG)) > 0) {
+            inputMsg = msg.substring(0, pos);
+            msg = msg.substring(pos + ChatProtocol.END_FLAG.length());
+            parseInputInternal(inputMsg);
+        }
+        if (msg.length() > 0) notFinshed.append(msg);
     }
 
     public abstract void parseInputInternal(String msg) throws IOException;

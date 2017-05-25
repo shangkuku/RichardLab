@@ -15,8 +15,11 @@ public class ChatProtocol {
 
     public static final String SUCCESS_FLAG = "success";
 
+    public static final String END_FLAG = "$%^!@$#^&%!@#";
+
 
     private ChatServer server;
+
 
     private int maxClient = 2;
 

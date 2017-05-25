@@ -29,6 +29,7 @@ public class CommonUtils {
         String msg = null;
         synchronized (in) {
             try {
+
                 while ((length = in.read(b)) != -1) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
                     baos.write(b, 0, length);

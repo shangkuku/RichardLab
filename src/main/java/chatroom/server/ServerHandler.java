@@ -259,17 +259,6 @@ public class ServerHandler {
 
         @Override
         public void parseInputInternal(String msg) throws IOException {
-            String[] split = msg.split("\\s");
-            String command = split[0];
-            String[] args = new String[split.length];
-            System.arraycopy(split, 1, args, 0, split.length - 1);
-            try {
-                Command c = Command.valueOf(command.toUpperCase());
-                InputMessage im = new InputMessage(c, args);
-                ServerHandler.this.resolveCommand(im);
-            } catch (IllegalArgumentException e) {
-                CommonUtils.writeMessage(socket.getOutputStream(), String.format("无效命令<%s>", msg));
-            }
 
         }
     }

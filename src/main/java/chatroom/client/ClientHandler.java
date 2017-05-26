@@ -1,15 +1,14 @@
 package chatroom.client;
 
 import chatroom.exception.UnknownCommandException;
-import chatroom.parser.InputParser;
 import chatroom.model.Command;
+import chatroom.parser.InputParser;
 import chatroom.server.ChatProtocol;
 import chatroom.util.CommonUtils;
 import chatroom.util.LogUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Scanner;
 
 /**

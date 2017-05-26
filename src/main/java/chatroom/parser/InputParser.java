@@ -1,16 +1,10 @@
 package chatroom.parser;
 
-import chatroom.model.Command;
-import chatroom.model.InputMessage;
 import chatroom.server.ChatProtocol;
-import chatroom.server.ServerHandler;
 import chatroom.util.CommonUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Created by RichardYuan on 2017/5/21 0021.

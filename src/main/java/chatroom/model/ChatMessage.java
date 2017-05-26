@@ -1,7 +1,5 @@
 package chatroom.model;
 
-import chatroom.util.CommonUtils;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 

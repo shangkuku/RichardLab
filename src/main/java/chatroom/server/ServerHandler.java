@@ -3,10 +3,10 @@ package chatroom.server;
 import chatroom.exception.LoginFailException;
 import chatroom.exception.UnknownCommandException;
 import chatroom.model.ChatMessage;
-import chatroom.model.User;
-import chatroom.parser.InputParser;
 import chatroom.model.Command;
 import chatroom.model.InputMessage;
+import chatroom.model.User;
+import chatroom.parser.InputParser;
 import chatroom.util.CommonUtils;
 import chatroom.util.LogUtils;
 
@@ -43,6 +43,7 @@ public class ServerHandler {
         String[] args = msg.getArgs();
         switch (command) {
             case LOGIN: toLogin(args); break;
+            case LOGOUT: logout(this.userName); break;
             case SEND_MESSAGE: toSendMsg(args); break;
             case LIST: toList(args); break;
             case BLACKLIST: toBlackList(args); break;

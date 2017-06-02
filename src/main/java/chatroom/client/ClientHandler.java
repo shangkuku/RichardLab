@@ -18,7 +18,7 @@ public class ClientHandler {
 
     private ChatClient client;
 
-    private volatile Boolean running = true;
+    private Boolean running = true;
 
     private Scanner scanner = new Scanner(System.in);
 

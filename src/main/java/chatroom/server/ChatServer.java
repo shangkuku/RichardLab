@@ -6,8 +6,6 @@ import chatroom.util.CommonUtils;
 import chatroom.util.LogUtils;
 
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URISyntaxException;
@@ -15,12 +13,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Queue;
+import java.util.Scanner;
 import java.util.concurrent.*;
 
 /**
  * Created by RichardYuan on 2017/5/16 0016.
  */
-public class ChatServer implements Runnable {
+public class ChatServer {
 
 
     // timestamp
@@ -39,10 +38,10 @@ public class ChatServer implements Runnable {
 
     private final int port;
 
-    private volatile Boolean running = Boolean.TRUE;
+    private static Boolean running = Boolean.TRUE;
 
     public static void main(String[] args) {
-        new ChatServer(1).run();
+        new ChatServer(1).startup();
     }
 
     public ChatServer(int port, long blockDuration) {
@@ -64,7 +63,10 @@ public class ChatServer implements Runnable {
 
     private void startTimeoutServer() {
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(new timeoutServer(), 5, timeoutServer.timeInternal, TimeUnit.SECONDS);
+        Thread t = new Thread(new TimeoutServer());
+        t.setName("timeout");
+        t.setDaemon(true);
+        service.scheduleAtFixedRate(t, 5, TimeoutServer.timeInternal, TimeUnit.SECONDS);
     }
 
 
@@ -89,11 +91,11 @@ public class ChatServer implements Runnable {
     }
 
 
-    @Override
-    public void run() {
+    private void startup() {
         try (ServerSocket ss = new ServerSocket(this.port)) {
             LogUtils.log("服务器已启动");
             startTimeoutServer();
+            startInputServer();
             while (running) {
                 try {
                     Socket socket = ss.accept();
@@ -105,13 +107,31 @@ public class ChatServer implements Runnable {
             }
         } catch (IOException e) {
             LogUtils.log("服务器启动异常", e);
-            System.exit(0);
+            CommonUtils.unknownException(e);
+        }
+    }
+
+    private void startInputServer() {
+    }
+
+
+    private class InputServer implements Runnable {
+
+        @Override
+        public void run() {
+            while (true) {
+                Scanner sc = new Scanner(System.in);
+                String str = sc.nextLine();
+                if (ChatProtocol.SERVER_END.equals(str)) {
+                    running = false;
+                    break;
+                }
+            }
         }
     }
 
 
-
-    private class timeoutServer implements Runnable {
+    private class TimeoutServer implements Runnable {
 
         /**
          * 单位为秒

@@ -17,6 +17,8 @@ public class ChatProtocol {
 
     public static final String END_FLAG = "$%^!@$#^&%!@#";
 
+    public static final String SERVER_END = "quit";
+
 
     private ChatServer server;
 
